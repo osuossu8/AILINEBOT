@@ -2,14 +2,10 @@ from flask import Flask, request, abort
 from linebot import LineBotApi, WebhookHandler
 from linebot.exceptions import InvalidSignatureError
 from linebot.models import ImageMessage, MessageEvent, TextMessage, TextSendMessage
-#import os, io
 import requests, json, os, io, cv2
-#import json
-#import io
 from io import BytesIO
 from PIL import Image
 import numpy as np
-#import cv2
 from keras.models import load_model
 
 app = Flask(__name__)
@@ -45,26 +41,31 @@ def callback():
 
     return 'OK'
 
+# テキストを受け取る部分
 @handler.add(MessageEvent, message=TextMessage)
 def handler_message(event):
      line_bot_api.reply_message(
          event.reply_token,
          TextSendMessage(text=event.message.text))
 
+# オウム返しする部分。おまけ。
+def reply_message(event, messages):
+    line_bot_api.reply_message(
+        event.reply_token,
+        messages=messages,
+    )
+
+# 画像を受け取る部分
 @handler.add(MessageEvent, message=ImageMessage)
 def handle_image(event):
     print("handle_image:", event)
 
     message_id = event.message.id
-    #message_content = line_bot_api.get_message_content(message_id)
 
-    #image = BytesIO(message_content.content)
-
-    image_url = 'https://api.line.me/v2/bot/message/' + message_id + '/content/'
+    #image_url = 'https://api.line.me/v2/bot/message/' + message_id + '/content/'
     getImageLine(message_id)
 
     try:
-        #image_text = get_text_by_ms(image_url=getImageLine(message_id),image=image)
         image_text = get_text_by_ms(image_url=getImageLine(message_id))
 
         messages = [
@@ -75,12 +76,6 @@ def handle_image(event):
 
     except Exception as e:
         reply_message(event, TextSendMessage(text='エラーが発生しました'))
-
-def reply_message(event, messages):
-    line_bot_api.reply_message(
-        event.reply_token,
-        messages=messages,
-    )
 
 def getImageLine(id):
 
@@ -98,9 +93,10 @@ def getImageLine(id):
 
     return filename
 
-def get_text_by_ms(image_url):
-#def get_text_by_ms(image_url=None, image=None):
 
+def get_text_by_ms(image_url):
+
+    # 92行目で保存した url から画像を書き出す。
     image = cv2.imread(image_url)
     if image is None:
         print("Not open")
@@ -114,14 +110,18 @@ def get_text_by_ms(image_url):
     return text
 
 def detect_who(img):
+
     face=""
+    # グローバル変数を取得する
     global model
 
+    # 一番初めだけ model をロードしたい
     if model is None:
         model = load_model('./shiogao_model2.h5')
 
     predict = model.predict(img)
     faceNumLabel=np.argmax(predict)
+
     if faceNumLabel == 0:
         face = "オリーブオイル顔"
     elif faceNumLabel == 1:
