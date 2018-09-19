@@ -1,13 +1,7 @@
 from flask import Flask, request, abort
-from linebot import (
-    LineBotApi, WebhookHandler
-)
-from linebot.exceptions import(
-    InvalidSignatureError
-)
-from linebot.models import(
-    ImageMessage, MessageEvent, TextMessage, TextSendMessage,
-)
+from linebot import LineBotApi, WebhookHandler
+from linebot.exceptions import InvalidSignatureError
+from linebot.models import ImageMessage, MessageEvent, TextMessage, TextSendMessage
 import os
 import requests
 import json
@@ -30,8 +24,6 @@ header = {
     "Content-Type": "application/json",
     "Authorization": "Bearer " + YOUR_CHANNEL_ACCESS_TOKEN
 }
-
-#####
 
 @app.route("/callback", methods=['POST'])
 def callback():
@@ -64,12 +56,9 @@ def handle_image(event):
     message_content = line_bot_api.get_message_content(message_id)
 
     image = BytesIO(message_content.content)
-    ###
+
     image_url = 'https://api.line.me/v2/bot/message/' + message_id + '/content/'
-    print(image_url)
     getImageLine(message_id)
-    print(getImageLine(message_id))
-    ###
 
     try:
         image_text = get_text_by_ms(image_url=getImageLine(message_id),image=image)
@@ -89,7 +78,6 @@ def reply_message(event, messages):
         messages=messages,
     )
 
-###
 def getImageLine(id):
 
     line_url = 'https://api.line.me/v2/bot/message/' + id + '/content/'
@@ -105,42 +93,11 @@ def getImageLine(id):
     i.save(filename)
 
     return filename
-###
-###
-LINE_API_ENDPOINT = "https://api.line.me/v2/bot/message/reply"
 
 model = None
-print(model)
 
 def get_text_by_ms(image_url=None, image=None):
-    if image_url is None and image is None:
-        return '必要な情報が足りません'
 
-    if image_url:
-        headers = {
-    "Content-Type": "application/json",
-    }
-        data = {'url': image_url}
-        response = requests.post(
-            LINE_API_ENDPOINT,
-            headers=headers,
-            json=data
-        )
-
-    elif image is not None:
-        headers = {
-    "Content-Type": "application/json",
-    }
-        response = requests.post(
-            LINE_API_ENDPOINT,
-            headers=headers,
-            data=image,
-        )
-
-    status = response.status_code
-    data = response.json()
-
-    #####
     image = cv2.imread(image_url)
     if image is None:
         print("Not open")
@@ -148,16 +105,11 @@ def get_text_by_ms(image_url=None, image=None):
     image = cv2.merge([r,g,b])
     img = cv2.resize(image,(64,64))
     img=np.expand_dims(img,axis=0)
-    print("** 1 **")
     face = detect_who(img=img)
-    print("** 7**")
-    print(face)
-    #####
-    text = face
 
+    text = face
     return text
 
-#####
 def detect_who(img):
     face=""
     global model
@@ -179,6 +131,5 @@ def detect_who(img):
     return face
 
 if __name__ == "__main__":
-    #    app.run()
     port = int(os.getenv("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
