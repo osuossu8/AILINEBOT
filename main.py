@@ -61,8 +61,6 @@ def handle_image(event):
     print("handle_image:", event)
 
     message_id = event.message.id
-
-    #image_url = 'https://api.line.me/v2/bot/message/' + message_id + '/content/'
     getImageLine(message_id)
 
     try:
@@ -96,7 +94,7 @@ def getImageLine(id):
 
 def get_text_by_ms(image_url):
 
-    # 92行目で保存した url から画像を書き出す。
+    # 90行目で保存した url から画像を書き出す。
     image = cv2.imread(image_url)
     if image is None:
         print("Not open")
