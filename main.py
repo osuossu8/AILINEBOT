@@ -2,14 +2,14 @@ from flask import Flask, request, abort
 from linebot import LineBotApi, WebhookHandler
 from linebot.exceptions import InvalidSignatureError
 from linebot.models import ImageMessage, MessageEvent, TextMessage, TextSendMessage
-import os
-import requests
-import json
-import io
+#import os, io
+import requests, json, os, io, cv2
+#import json
+#import io
 from io import BytesIO
 from PIL import Image
 import numpy as np
-import cv2
+#import cv2
 from keras.models import load_model
 
 app = Flask(__name__)
@@ -64,7 +64,8 @@ def handle_image(event):
     getImageLine(message_id)
 
     try:
-        image_text = get_text_by_ms(image_url=getImageLine(message_id),image=image)
+        #image_text = get_text_by_ms(image_url=getImageLine(message_id),image=image)
+        image_text = get_text_by_ms(image_url=getImageLine(message_id))
 
         messages = [
             TextSendMessage(text=image_text),
