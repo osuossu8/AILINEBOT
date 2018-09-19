@@ -25,6 +25,9 @@ header = {
     "Authorization": "Bearer " + YOUR_CHANNEL_ACCESS_TOKEN
 }
 
+# model はグローバルで宣言し、初期化しておく
+model = None
+
 @app.route("/callback", methods=['POST'])
 def callback():
     # get X-Line-Signature header value
@@ -53,9 +56,9 @@ def handle_image(event):
     print("handle_image:", event)
 
     message_id = event.message.id
-    message_content = line_bot_api.get_message_content(message_id)
+    #message_content = line_bot_api.get_message_content(message_id)
 
-    image = BytesIO(message_content.content)
+    #image = BytesIO(message_content.content)
 
     image_url = 'https://api.line.me/v2/bot/message/' + message_id + '/content/'
     getImageLine(message_id)
@@ -87,16 +90,15 @@ def getImageLine(id):
     print(result)
 
     # 画像の保存
-    i = Image.open(BytesIO(result.content))
+    im = Image.open(BytesIO(result.content))
     filename = '/tmp/' + id + '.jpg'
     print(filename)
-    i.save(filename)
+    im.save(filename)
 
     return filename
 
-model = None
-
-def get_text_by_ms(image_url=None, image=None):
+def get_text_by_ms(image_url):
+#def get_text_by_ms(image_url=None, image=None):
 
     image = cv2.imread(image_url)
     if image is None:
@@ -116,7 +118,6 @@ def detect_who(img):
 
     if model is None:
         model = load_model('./shiogao_model2.h5')
-        print(model)
 
     predict = model.predict(img)
     faceNumLabel=np.argmax(predict)
